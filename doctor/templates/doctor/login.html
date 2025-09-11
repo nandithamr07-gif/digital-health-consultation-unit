@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Doctor Login</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to right, #2c3e50, #3498db);
+            color: white;
+            text-align: center;
+            padding-top: 100px;
+        }
+        form {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        input {
+            padding: 10px;
+            margin: 10px;
+            width: 250px;
+            border: none;
+            border-radius: 10px;
+        }
+        button {
+            background-color: #1abc9c;
+            padding: 10px 25px;
+            border: none;
+            color: white;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .error {
+            color: yellow;
+        }
+    </style>
+</head>
+<body>
+    <h1>Doctor Panel Login</h1>
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% endif %}
+    <form method="post">
+        {% csrf_token %}
+        <input type="text" name="username" placeholder="Username" required><br>
+        <input type="password" name="password" placeholder="Password" required><br>
+        <button type="submit">Login</button>
+    </form>
+</body>
+</html>
