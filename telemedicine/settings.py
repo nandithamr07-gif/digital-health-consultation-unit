@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-8s+m_#b5lw0=3#n#h#ofbtu(c!mc2p^*&(^qyj$a3!+e4dslv(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['nanditha.pythonanywhere.com', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['nanditha.pythonanywhere.com', '127.0.0.1', 'localhost','192.168.43.189']
 
 
 # Application definition
@@ -40,6 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'patient',
     'doctor',
+    'inventory',
+    'vitals',
+
 ]
 
 MIDDLEWARE = [

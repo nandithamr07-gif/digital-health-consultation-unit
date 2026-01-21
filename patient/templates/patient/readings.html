@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Simulated Sensor Readings</title>
+    <title>Patient Health Readings</title>
     <style>
         body {
             margin: 0;
@@ -14,6 +14,7 @@
             height: 100vh;
             color: #880e4f;
         }
+
         .container {
             background: #fff;
             padding: 40px;
@@ -23,42 +24,80 @@
             max-width: 500px;
             width: 100%;
         }
+
         h2 {
             font-size: 28px;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
-        form input {
-            width: 80%;
-            padding: 10px;
-            margin: 12px 0;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+
+        .reading-box {
+            font-size: 22px;
+            margin: 15px 0;
+            font-weight: bold;
         }
-        .submit-btn {
+
+        .label {
+            color: #ad1457;
+            font-size: 18px;
+        }
+
+        .value {
+            font-size: 26px;
+            color: #880e4f;
+        }
+
+        .call-btn {
             background-color: #d81b60;
             color: white;
             border: none;
-            padding: 12px 25px;
-            font-size: 16px;
-            margin-top: 20px;
-            border-radius: 8px;
+            padding: 14px 30px;
+            font-size: 18px;
+            margin-top: 30px;
+            border-radius: 10px;
             cursor: pointer;
         }
-        .submit-btn:hover {
+
+        .call-btn:hover {
             background-color: #880e4f;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Simulate Your Health Readings</h2>
-        <form method="post">
-            {% csrf_token %}
-            <input type="text" name="temperature" placeholder="Enter Temperature (°C)" required><br>
-            <input type="text" name="pulse" placeholder="Enter Pulse Rate (BPM)" required><br>
-            <button type="submit" class="submit-btn">Submit</button>
-        </form>
+
+<div class="container">
+    <h2>Your Live Health Readings</h2>
+
+    <div class="reading-box">
+        <span class="label">Temperature:</span>
+        <span class="value" id="temp">{{ temperature }}</span> °C
     </div>
+
+    <div class="reading-box">
+        <span class="label">Pulse:</span>
+        <span class="value" id="pulse">{{ pulse }}</span> bpm
+    </div>
+
+    <button class="call-btn" onclick="joinCall()">Join Doctor Call</button>
+</div>
+
+<script>
+function fetchVitals() {
+    fetch("/live-vitals/")
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("temp").innerText = data.temperature;
+            document.getElementById("pulse").innerText = data.pulse;
+        })
+        .catch(err => console.log("ESP not reachable"));
+}
+
+// Refresh every 2 seconds
+setInterval(fetchVitals, 2000);
+    
+function joinCall() {
+    window.open("https://meet.jit.si/DHCU-Test-Room", "_blank");
+}
+</script>
+
 </body>
 </html>

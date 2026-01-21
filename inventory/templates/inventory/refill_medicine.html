@@ -1,0 +1,15 @@
+{% extends 'inventory/operator_base.html' %}
+
+{% block content %}
+<h2>Refill Medicine</h2>
+
+<p><b>Medicine:</b> {{ medicine.name }}</p>
+<p><b>Current Stock:</b> {{ medicine.quantity }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    <input type="number" name="refill_quantity" placeholder="Enter refill quantity" required>
+    <br><br>
+    <button type="submit" class="btn">Refill Stock</button>
+</form>
+{% endblock %}

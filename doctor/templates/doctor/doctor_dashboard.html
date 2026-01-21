@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Doctor Dashboard</title>
+
+    <script src="https://meet.jit.si/external_api.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to right, #d7e1ec, #f3f9ff);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 40px;
+        }
+
+        .readings {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 50px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .box {
+            background: white;
+            border-radius: 15px;
+            padding: 30px 50px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 220px;
+            transition: transform 0.3s ease;
+        }
+
+        .box:hover {
+            transform: translateY(-5px);
+        }
+
+        .box h2 {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .box p {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(6px);
+            width: 90%;
+            max-width: 500px;
+            margin-top: 30px;
+        }
+
+        select, input[type="text"], button {
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        button {
+            background-color: #27ae60;
+            color: white;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #219653;
+        }
+
+        label {
+            font-weight: bold;
+            color: #333;
+            margin-top: 10px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Doctor Dashboard</h1>
+
+{% if pulse != "--" %}
+<div class="readings">
+    <div class="box">
+        <h2>Temperature</h2>
+        <p id="temp">{{ temperature }}°C</p>
+    </div>
+    <div class="box">
+        <h2>Pulse Rate</h2>
+        <p id="pulse">{{ pulse }} bpm</p>
+    </div>
+    <div class="box">
+        <h2>Last Updated</h2>
+        <p id="time">{{ time }}</p>
+    </div>
+</div>
+
+<h3>Live Video Consultation</h3>
+<div id="callAlert" style="
+    display:none;
+    background:#ffecb3;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:20px;
+    font-weight:bold;
+">
+    📞 Patient is calling...
+    <button onclick="joinCall()" style="
+        margin-left:15px;
+        padding:8px 15px;
+        background:#27ae60;
+        color:white;
+        border:none;
+        border-radius:5px;
+        cursor:pointer;
+    ">
+        Join Call
+    </button>
+</div>
+<div id="jitsi-container"
+     style="margin-top:20px; width:100%; max-width:700px; height:500px; border:2px solid #ccc; border-radius:10px;">
+</div>
+
+
+<div class="form-container">
+    <h3>Medicine Dispensing</h3>
+
+    <label>Select Medicine:</label>
+    <select id="medicine">
+        <option value="">-- Choose --</option>
+        <option value="1">Paracetamol</option>
+        <option value="2">Amoxicillin</option>
+        <option value="3">Ibuprofen</option>
+        <option value="4">Cetirizine</option>
+    </select>
+
+    <label>Select Quantity:</label>
+    <select id="qty">
+        <option value="1">1 Tablet</option>
+        <option value="2">2 Tablets</option>
+    </select>
+
+    <button onclick="dispense()">Dispense Medicine</button>
+
+    <p id="status" style="margin-top:15px; font-weight:bold;"></p>
+</div>
+
+{% else %}
+<p>No patient data available.</p>
+{% endif %}
+
+<script>
+function fetchVitals() {
+    fetch("/doctor/latest-vitals/")
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("temp").innerText = data.temperature + "°C";
+            document.getElementById("pulse").innerText = data.pulse + " bpm";
+            document.getElementById("time").innerText = data.time;
+        });
+}
+
+setInterval(fetchVitals, 2000);
+
+// ------------------ DISPENSE FUNCTION ------------------
+function dispense() {
+    const medicine = document.getElementById("medicine").value;
+    const qty = document.getElementById("qty").value;
+
+    if (!medicine) {
+        alert("Please select a medicine.");
+        return;
+    }
+
+    document.getElementById("status").innerText = "Dispensing... Please wait.";
+
+    fetch(`/doctor/dispense/?motor=${medicine}&qty=${qty}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("status").innerText = data.message;
+            alert(data.message);
+        })
+        .catch(err => {
+            document.getElementById("status").innerText = "Connection error";
+            alert("Error connecting to ESP");
+        });
+}
+</script>
+<script>
+let activeRoom = null;
+let jitsiStarted = false;
+
+function checkIncomingCall() {
+    if (jitsiStarted) return;
+
+    fetch("/doctor/check-call/")
+    .then(res => res.json())
+    .then(data => {
+        console.log("CALL DATA:", data);
+
+        if (data.calling) {
+            activeRoom = data.room;
+            document.getElementById("callAlert").style.display = "block";
+        }
+    })
+    .catch(err => console.log("Call check failed", err));
+}
+
+function joinCall() {
+    if (!activeRoom) return;
+
+    startJitsiCall(activeRoom);
+    document.getElementById("callAlert").style.display = "none";
+    jitsiStarted = true;
+}
+
+function startJitsiCall(roomName) {
+    const domain = "meet.jit.si";
+    const options = {
+        roomName: roomName,
+        width: "100%",
+        height: 500,
+        parentNode: document.querySelector('#jitsi-container'),
+    };
+    new JitsiMeetExternalAPI(domain, options);
+}
+
+// Check every 2 seconds
+setInterval(checkIncomingCall, 2000);
+</script>
+</body>
+</html>

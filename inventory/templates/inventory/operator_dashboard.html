@@ -1,0 +1,35 @@
+{% extends 'inventory/operator_base.html' %}
+
+{% block content %}
+<h2>Medicine Inventory Dashboard</h2>
+
+<table>
+    <tr>
+        <th>Medicine Name</th>
+        <th>Batch No</th>
+        <th>Available Stock</th>
+        <th>Status</th>
+        <th>Action</th>
+    </tr>
+
+    {% for med in medicines %}
+    <tr>
+        <td>{{ med.name }}</td>
+        <td>{{ med.batch_number }}</td>
+        <td>{{ med.quantity }}</td>
+
+        {% if med.is_low_stock %}
+            <td class="low-stock">Low Stock</td>
+        {% else %}
+            <td>Available</td>
+        {% endif %}
+
+        <td>
+            <a href="{% url 'refill_medicine' med.id %}" class="btn">
+                Refill
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
